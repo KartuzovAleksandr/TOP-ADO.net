@@ -1,0 +1,41 @@
+1. Установите SQL2022-SSEI-Expr.exe (Express Edition) или SqlLocalDB.msi (LocalDB)
+	Ограничения версии LocalDB (легче по объему и потреблению ОЗУ) 		https://learn.microsoft.com/ru-ru/sql/database-engine/configure-windows/sql-server-express-localdb?view=sql-server-ver16
+	Все по умолчанию
+	Вообще-то SQL Server Express 2019 LocalDB входит в Visual Studio Community (Pro и Ent), найдите галку в инсталляторе.
+2. Установите SSMS-Setup-RUS.exe (Microsoft SQL Server Management Studio)
+	Или EMS SQL Manager Lite 5.2.1 (легче по объему и потреблению ОЗУ)
+	Все по умолчанию
+3. При подключении укажите Имя сервера: (localdb)\MSSQLLocalDB для LocalDB 
+	Для Express будет работать поиск в выпадающем, выберите экземпляр SQL Server (если вы его не помните)
+	Остальное по умолчанию. Поставить галочку "Доверять сертификату сервера"
+4. Учебной БД у Microsoft конечно нет (у Oracle есть HR). Устанавливаем легендарную "Северные ветра"
+	Правая кнопка мыши на "Базы данных" - "Восстановить БД" - "Устройство" - "..." - "Файл" - "Добавить" - Northwinds.bak
+5. Проверяем - даем запрос
+	use Northwinds;
+	select top (10) * from Customers;
+6. Создаем обычное консольное приложение .net (или скачиваем ADO_Customers.zip)
+	using Microsoft.Data.SqlClient;
+	const string connectionString = "Data Source = (localdb)\\MSSQLLocalDB; Initial Catalog = Northwinds;"+
+ 									"Integrated Security = true";
+	const string queryString = "SELECT top (10) * from customers;";
+	using SqlConnection connection = new(connectionString);
+	SqlCommand command = new(queryString, connection);
+	try
+	{
+    	connection.Open();
+	    SqlDataReader reader = command.ExecuteReader();
+    	while (reader.Read())
+	    {
+    	    Console.WriteLine("\t{0}\t{1}\t{2}", reader[0], reader[1], reader[2]);
+	    }
+	    reader.Close();
+	}
+	catch (Exception ex)
+	{
+    	Console.WriteLine(ex.Message);
+	}
+7. Однако пространства имен Microsoft.Data.SqlClient (раньше был System.Data.SqlClient) нет.
+	Надо вручную установить пакет через NuGet.
+	"Средства" - "Диспетчер пакетов NuGet" - "Управление пакетами NuGet для решения ..." - 
+	"Поиск" вводим sql - требуемый пакет выйдет первым - кликаем - отмечаем галочкой проект - "Установить"
+8. Запускаем и наслаждаемся :-)
